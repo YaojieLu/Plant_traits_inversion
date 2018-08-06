@@ -4,7 +4,7 @@ from scipy import optimize
 import pymc3 as pm
 import theano
 import theano.tensor as tt
-#theano.config.optdb.max_use_ratio = 20
+theano.config.optdb.max_use_ratio = 20
 
 # Read xlsx file
 workbook = xlrd.open_workbook('Data/Dataset.xlsx')
@@ -32,8 +32,8 @@ with model:
     ''' Data '''
     Tod = tt.as_tensor(get_data('T'))
     Iod = tt.as_tensor(get_data('I'))
-    Rfod = tt.as_tensor(get_data('Rf'))
     Dod = tt.as_tensor(get_data('D'))
+    sod = tt.as_tensor(np.ones_like(get_data('D')))
     vnod = tt.as_tensor(get_data(species))
    
     ''' Other parameters '''
@@ -52,7 +52,6 @@ with model:
     n = 0.43# u = 13.4 hrs
     pe = -2.1*10**(-3)
     beta = 4.9
-    intercept = 0.7
     
     ''' Custom theano functions '''
     ### Xylem water potential
@@ -208,10 +207,6 @@ with model:
             return [g[0]*dpxdbs, g[0]*dpxdc, g[0]*dpxdg1, g[0]*dpxdkxmax, g[0]*dpxdp50, g[0]*dpxdT, g[0]*dpxdI, g[0]*dpxdD, g[0]*dpxds]
             
     ''' Simulation '''
-    # Soil moisture simulation
-    smd, updates = theano.scan(fn = lambda E, R, s : tt.minimum(s - E + R, 1),
-                               sequences = [vnod * alpha, Rfod / 1000 / n / Z * intercept],
-                               outputs_info = [s0])
     # Sap flow
     def step(T, I, D, s):
         ps = pe * s ** (-beta) # Soil water potential
@@ -222,15 +217,14 @@ with model:
         vn = (kx * l * L * (ps - px) * u) / (1000 * n * Z) * alpha # Sap flow
         return vn
     vnmd, updatevn = theano.scan(fn = step,
-                                 sequences = [Tod, Iod, Dod, smd])
+                                 sequences = [Tod, Iod, Dod, sod])
     
     ''' Sampling '''
     obs = pm.Normal('obs', mu = vnmd, sd = sigma, observed = vnod)
-    #start = pm.find_MAP(method = "BFGS")
+    start = pm.find_MAP(method = "BFGS")
     #step = pm.NUTS(scaling = start)
-    #db = pm.backends.Text(species)
-    #trace = pm.sample(1e3, step = step, start = start, random_seed = 123, trace = db, chains = 1)
-    trace = pm.sample(1e3)
+    db = pm.backends.Text(species)
+    trace = pm.sample(1e3, start = start,9 chains = 1, random_seed = 123, trace = db)#, step = step
 
 #map_estimate = pm.find_MAP(model=model)
 #print(map_estimate)

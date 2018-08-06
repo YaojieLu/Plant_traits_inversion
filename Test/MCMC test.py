@@ -4,16 +4,16 @@ from scipy import optimize
 import pymc3 as pm
 import theano
 import theano.tensor as tt
-#theano.config.optdb.max_use_ratio = 20
+theano.config.optdb.max_use_ratio = 20
 
 # Read xlsx file
-workbook = xlrd.open_workbook('Data/Dataset.xlsx')
+workbook = xlrd.open_workbook('../Data/Dataset.xlsx')
 sheet = workbook.sheet_by_name('daily_average')
 species = 'Pm_RN_S'#'Pm_RN_S' 'Am_RN_S' 'Nd_RN_S' 'Qc_RN_S' 'Qg_SN_S'
 
 # Get data
 keys = np.asarray(list(sheet.row_values(0)), dtype='str')
-get_data = lambda lab: np.asarray(sheet.col_values(np.where(keys == lab)[0][0])[1:3])
+get_data = lambda lab: np.asarray(sheet.col_values(np.where(keys == lab)[0][0])[1:])
 
 # PyMC3
 model = pm.Model()
@@ -22,10 +22,10 @@ with model:
     alpha = pm.Uniform('alpha', lower = 0.001, upper = 0.2)
     bs = pm.Uniform('bs', lower = 0.1, upper = 2)
     c = pm.Uniform('c', lower = -5, upper = -0.1)
-    g1 = pm.Uniform('g1', lower = 1, upper = 200)
-    kxmax = pm.Uniform('kxmax', lower = 0.5, upper = 20)
+    g1 = pm.Uniform('g1', lower = 1, upper = 100)
+    kxmax = pm.Uniform('kxmax', lower = 0.5, upper = 10)
     p50 = pm.Uniform('p50', lower = -10, upper = -0.1)
-    s0 = pm.Uniform('s0', lower = 0.3, upper = 1)
+    s0 = pm.Uniform('s0', lower = 0.6, upper = 1)
     sigma = pm.HalfNormal('sigma', tau=1)
     Z = pm.Uniform('Z', lower = 0.5, upper = 5)
     
@@ -207,30 +207,26 @@ with model:
             dpxds = -dfds/dfdpx
             return [g[0]*dpxdbs, g[0]*dpxdc, g[0]*dpxdg1, g[0]*dpxdkxmax, g[0]*dpxdp50, g[0]*dpxdT, g[0]*dpxdI, g[0]*dpxdD, g[0]*dpxds]
             
-    ''' Simulation '''
-    # Soil moisture simulation
-    smd, updates = theano.scan(fn = lambda E, R, s : tt.minimum(s - E + R, 1),
-                               sequences = [vnod * alpha, Rfod / 1000 / n / Z * intercept],
-                               outputs_info = [s0])
-    # Sap flow
-    def step(T, I, D, s):
-        ps = pe * s ** (-beta) # Soil water potential
-        px = Pxf()(bs, c, g1, kxmax, p50, T, I, D, s) # Xylem water potential
+    ''' Sap flow simulation '''
+    def step(T, I, D, Rf, sp):
+        ps = pe * sp ** (-beta) # Soil water potential
+        px = Pxf()(bs, c, g1, kxmax, p50, T, I, D, sp) # Xylem water potential
         slope = 16 + tt.exp(p50) * 1092 # Slope - xylem vulnerability
         PLC = (1/(1+tt.exp(slope/25*(px-p50))) - 1/(1+tt.exp(slope/25*(-p50))))/(1 - 1/(1+tt.exp(slope/25*(-p50)))) # PLC
         kx = kxmax * (1 - PLC) # Xylem conductance
         vn = (kx * l * L * (ps - px) * u) / (1000 * n * Z) * alpha # Sap flow
-        return vn
-    vnmd, updatevn = theano.scan(fn = step,
-                                 sequences = [Tod, Iod, Dod, smd])
+        s = tt.minimum(sp - vn * alpha + Rf / 1000 / n / Z * intercept, 1) # Soil moisture
+        return s, vn
+    outputs, update = theano.scan(fn = step,
+                                  sequences = [Tod, Iod, Dod, Rfod],
+                                  outputs_info = [s0, None])
     
     ''' Sampling '''
-    obs = pm.Normal('obs', mu = vnmd, sd = sigma, observed = vnod)
-    #start = pm.find_MAP(method = "BFGS")
+    obs = pm.Normal('obs', mu = outputs[1], sd = sigma, observed = vnod)
+    start = pm.find_MAP(method = "BFGS")
     #step = pm.NUTS(scaling = start)
-    #db = pm.backends.Text(species)
-    #trace = pm.sample(1e3, step = step, start = start, random_seed = 123, trace = db, chains = 1)
-    trace = pm.sample(1e3)
+    db = pm.backends.Text(species)
+    trace = pm.sample(1e3, start = start, random_seed = 123, trace = db, chains = 1)#, step = step
 
 #map_estimate = pm.find_MAP(model=model)
 #print(map_estimate)

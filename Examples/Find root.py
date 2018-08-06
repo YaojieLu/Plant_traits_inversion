@@ -4,17 +4,15 @@ import numpy as np
 import theano
 import theano.tensor as tt
 
-para = 3
-def func(x, a, b):
-    value = x + para * np.exp(x) - a * b**2
+envod = np.array([1, 2])
+
+def func(x, a, b, env):
+    value = x + env * np.exp(x) - a * b**2
     return value
 
-def jac(x, a, b):
-    jac = 1 + para * np.exp(x)
-    return jac
-
-def x_from_ab(a, b):
-    return optimize.newton(func, 1, fprime = jac, args=(a, b))
+def x_from_ab(a, b, env):
+    value = optimize.newton(func, 4, args = (a, b, env))
+    return value
 
 class Xf(tt.Op):
     itypes = [tt.dscalar, tt.dscalar]
@@ -22,19 +20,23 @@ class Xf(tt.Op):
 
     def perform(self, node, inputs, outputs):
         a, b = inputs
-        x = x_from_ab(a, b)
+        x = x_from_ab(a, b, env)
         outputs[0][0] = np.array(x)
-
-    def grad(self, inputs, g):
+    
+    def grad(self, inputs, output_gradients):
         a, b = inputs
         x = self(a, b)
-        return [-g[0] * (-b**2)/(1 + para * tt.exp(x)), -g[0] * (-2*a*b)/(1 + para * tt.exp(x))]
+        g, = output_gradients
+        return [-g * (-b**2)/(1 + env * tt.exp(x)), -g * (-2*a*b)/(1 + env * tt.exp(x))]
 
 att = tt.dscalar('att')
 btt = tt.dscalar('btt')
 f = theano.function([att, btt], Xf()(att, btt))
+theano.printing.pydotprint(f, outfile="model.png", var_with_name_simple=True)
 expr = Xf()(att, btt)
-ga = tt.grad(expr, att)
-gb = tt.grad(expr, btt)
-print(ga.eval({att:3, btt:3}))
-print(gb.eval({att:3, btt:3}))
+
+for i in range(len(envod)):
+    env = envod[i]
+    ga = tt.grad(expr, att)
+    print(f(3, 4))
+    print(ga.eval({att:3, btt:4}))

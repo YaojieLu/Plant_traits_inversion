@@ -16,7 +16,7 @@ get_data = lambda lab: np.asarray(sheet.col_values(np.where(keys == lab)[0][0])[
 Rf = get_data('Rf')
 vn = get_data(species)
 
-sE = tt.dvector('spE')
+sE = tt.dvector('sE')
 sR = tt.dvector('sR')
 ss = tt.dscalar('ss')
 
