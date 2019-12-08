@@ -32,7 +32,7 @@ for i in range(len(paras)):
     plt.ylim([0, 1])
     plt.xlabel('$\\mathit{D}$', fontsize = 20)
     if i == 0:
-        plt.ylabel("Sobol's total index", fontsize = 20)
+        plt.ylabel("Sobol's total order indices", fontsize = 20)
     else:
         ax.axes.get_yaxis().set_visible(False)
     plt.tight_layout

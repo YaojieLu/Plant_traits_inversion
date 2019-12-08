@@ -28,7 +28,7 @@ for i, row in enumerate(ax):
         else:
             col.axes.get_xaxis().set_visible(False)
         if j == 0:
-            col.set_ylabel("Sobol's total Index", fontsize=30)
+            col.set_ylabel("Sobol's total order indices", fontsize=30)
         else:
             col.axes.get_yaxis().set_visible(False)
         scenario += 1

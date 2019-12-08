@@ -40,6 +40,40 @@ def Af(gs, T, I,
     Am = (Ac+Aj-((Ac+Aj)**2-4*z2*Ac*Aj)**0.5)/(2*z2)
     return Am
 
+# Photosynthesis rate - A
+def Atestf(gs, T, I,
+           Kc, Vcmax, ca, q, Jmax, z1, z2, R):
+    tau = tauf(T, R)
+    # Eq. A8
+    Km = Kc+tau/0.105
+    # Rubisco limitation (Eq. A5)
+    Ac = 1/2*(Vcmax+(Km+ca)*gs-(Vcmax**2+2*Vcmax*(Km-ca+2*tau)*gs+((ca+Km)*gs)**2)**(1/2))
+    # Eq. A4
+    J = (q*I+Jmax-((q*I+Jmax)**2-4*z1*q*I*Jmax)**0.5)/(2*z1)
+    # RuBP limitation (Eq. A6)
+    Aj = 1/2*(J+(2*tau+ca)*gs-(J**2+2*J*(2*tau-ca+2*tau)*gs+((ca+2*tau)*gs)**2)**(1/2))
+    
+    if Ac > Aj:
+        return 'Vcmax'
+    else:
+        return 'J'
+# Photosynthesis rate - A
+def Atest2f(gs, T, I,
+       Kc, Vcmax, ca, q, Jmax, z1, z2, R):
+    tau = tauf(T, R)
+    # Eq. A8
+    Km = Kc+tau/0.105
+    # Rubisco limitation (Eq. A5)
+    Ac = 1/2*(Vcmax+(Km+ca)*gs-(Vcmax**2+2*Vcmax*(Km-ca+2*tau)*gs+((ca+Km)*gs)**2)**(1/2))
+    # Eq. A4
+    J = (q*I+Jmax-((q*I+Jmax)**2-4*z1*q*I*Jmax)**0.5)/(2*z1)
+    # RuBP limitation (Eq. A6)
+    Aj = 1/2*(J+(2*tau+ca)*gs-(J**2+2*J*(2*tau-ca+2*tau)*gs+((ca+2*tau)*gs)**2)**(1/2))
+    # Am = min(Ac, Aj) Eq. A7
+    Am = (Ac+Aj-((Ac+Aj)**2-4*z2*Ac*Aj)**0.5)/(2*z2)
+    approx = (J/2+Vcmax/2-((J+Vcmax)**2/4-z2*J*Vcmax)**0.5)/(2*z2)
+    return Am, approx
+
 # Minimum xylem water potential function at given s
 def pxminf(ps, p50):
     f1 = lambda px: -(ps-px)*(1-PLCf(px, p50))

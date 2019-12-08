@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from scipy import stats
 
 # load traces
@@ -19,19 +20,21 @@ for i, row in enumerate(axs):
         idx = i*3+j
         param = params[idx]
         df = pd.DataFrame({param: ts[param]}).iloc[:, 0]
-        kde = stats.gaussian_kde(df)
-        param_range = np.linspace(ranges[idx][0], ranges[idx][1], 1000)
-        col.plot(param_range, kde(param_range), linewidth=2.5, color='blue')
+        col.hist(df, range=[ranges[idx][0], ranges[idx][1]], bins=100)
+#        kde = stats.gaussian_kde(df)
+#        param_range = np.linspace(ranges[idx][0], ranges[idx][1], 1000)
+#        col.plot(param_range, kde(param_range), linewidth=2.5, color='blue')
         mean, std = df.mean(), df.std()
         cv = abs(round(std/mean, 2))
-        col.set_title('CV = {}'.format(cv), fontsize=30)
+        col.set_title('RSD = {}'.format(cv), fontsize=30)
         col.axvline(x=true_values[idx], c='black',
                     label='True value', linestyle='dashed')
         col.axes.get_yaxis().set_visible(False)
-        col.tick_params(labelsize=20)
+        col.tick_params(labelsize=30)
         col.set_xlabel(labels[idx], fontsize=30)
         if idx == 0:
-            col.legend(loc='upper right', fontsize=30, framealpha=0)
+            col.legend([Line2D([0], [0], linestyle='dashed', color='black')],
+                       ['True value'], loc='upper right', fontsize=30, framealpha=0)
 
-plt.subplots_adjust(hspace=0.2, wspace=0.1)
+plt.subplots_adjust(hspace=0.25, wspace=0.1)
 plt.savefig('../Figures/Figure Syn no ps params.png', bbox_inches = 'tight')

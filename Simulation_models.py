@@ -46,7 +46,7 @@ def vnfsinLAI(X, T, I, Rf, D,
             sapflow_modeled.append(E/alpha)
             ps.append(psi)
             list_px.append(px)
-            print(E/(a*Li*l*u/(n*Z)*Di))
+            print(E/(a*Li*l*u/(n*Z)*Di), psi, E/alpha)
         
         else:
             print('gs = 0')

@@ -42,7 +42,11 @@ def muf(params,
             ps = psf(sp, pe, beta)
             pxmin = pxminf(ps, p50)
             pxmax = optimize.minimize_scalar(pxf, bounds=(pxmin, ps), method='bounded', args=(Ti, Ii, Di, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, Li))
-            px = optimize.brentq(pxf, pxmin, pxmax.x, args=(Ti, Ii, Di, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, Li))
+            try:
+                px = optimize.brentq(pxf, pxmin, pxmax.x, args=(Ti, Ii, Di, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, Li))
+            except ValueError:
+                px = -10
+                print(i)
             gs = 10**(-3)*kxf(px, kxmax, p50)*(ps-px)/(a*Di*Li)
             
             # Soil water balance - s(t) = min(s(t-1) - E(t) + R(t), 1)
@@ -62,9 +66,9 @@ def qtf(trace):
     for i in range(len(samples)):
         vn = muf(samples.iloc[i], T, I, Rf, D)
         df_vn.append(vn)
+        print(i)
     df_vn = pd.DataFrame(df_vn)
     df_vn_qt = df_vn.quantile([.05, .5, 0.95]).T
-    
     return df_vn_qt
 
 df_vn = qtf(ts)

@@ -12,7 +12,7 @@ latex = ['$\\alpha$', '$\\mathit{c}$', '$\\psi_{x50}$',
          '$\\mathit{k_{xmax}}$', '$\\mathit{g_1}$', '$\\mathit{L}$']
 df_thinned = {}
 for key in ts:
-    df_thinned[key] = [item for index, item in enumerate(ts[key]) if index % 1 == 0]
+    df_thinned[key] = [item for index, item in enumerate(ts[key]) if index % 50 == 0]
 df_thinned = pd.DataFrame.from_dict(data = df_thinned, orient = 'columns')
 df_thinned.rename(columns = dict(zip(ts.keys(), latex)), inplace = True)
 # mutual information

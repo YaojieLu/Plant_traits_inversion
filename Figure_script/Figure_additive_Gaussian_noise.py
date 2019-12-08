@@ -7,7 +7,7 @@ from matplotlib.lines import Line2D
 
 # load traces
 ts1 = pickle.load(open("../Data/45.pickle", "rb"))# no noise
-ts2 = pickle.load(open("../Data/std=30%.pickle", "rb"))# additive noise: std=30%mean
+ts2 = pickle.load(open("../Data/std=10%.pickle", "rb"))# additive noise: std=30%mean
 ts = [ts1, ts2]
 params = ['c', 'p50']
 true_values = [16, -4.5]
