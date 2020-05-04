@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # import data
-df = pd.read_csv('../Results/Sobol_ST.txt', sep = ',', index_col = 0)
+df = pd.read_csv('../Results/Sobol_day_UMB.txt', sep = ',', index_col = 0)
 df = df.drop(['g1'], axis=1)
 
 # figure
@@ -17,4 +17,4 @@ plt.subplots_adjust(top = 0.95, bottom = 0.13)
 plt.tight_layout
 paras = ['$\mathit{c}$', '$\mathit{L}$', '$\mathit{\psi_{x50}}$', '$\mathit{\psi_s}$']
 plt.legend(paras)
-plt.savefig('../Figures/Figure Sobol_day.png')
+#plt.savefig('../Figures/Figure Sobol_day.png')

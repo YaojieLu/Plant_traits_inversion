@@ -94,10 +94,10 @@ for i, day in enumerate(Days):
     S1.append(Si['S1'])
     print(day, " ", Si['ST'])
 
-dfST = pd.DataFrame(ST, columns = parsSA, index = list(Days))
-dfS1 = pd.DataFrame(S1, columns = parsSA, index = list(Days))
+dfST = pd.DataFrame(ST, columns=parsSA, index=list(Days))
+dfS1 = pd.DataFrame(S1, columns=parsSA, index=list(Days))
 dfST.index.name='Days'
 dfS1.index.name='Days'
 
 # Save to CSV
-dfST.to_csv("Results/Sobol_day_4.txt", encoding = 'utf-8', index = True)
+dfST.to_csv("Results/Sobol_day_4.txt", encoding='utf-8', index=True)

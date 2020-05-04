@@ -96,6 +96,37 @@ def pxf(px,
 
     return res
 
+# Medlyn model
+def pxf2(px,
+         T, I, D, ps,
+         Kc, Vcmax, ca, q, Jmax, z1, z2, R,
+         g1, c,
+         kxmax, p50, a, L):
+    
+    # Plant water balance
+    gs = kxf(px, kxmax, p50)*(ps-px)/(1000*a*D*L)
+    # PLC modifier
+    PLC = PLCf(px, p50)
+    f1 = lambda x:np.exp(-x*c)
+    # Stomatal function (Eq. 1)
+    res = gs-(1+g1/np.sqrt(D))*Af(gs, T, I, Kc, Vcmax, ca, q, Jmax, z1, z2, R)/ca*(f1(PLC)-f1(1))/(f1(0)-f1(1))
+
+    return res
+
+# Medlyn model 2
+def pxf3(px,
+         T, I, D, ps,
+         Kc, Vcmax, ca, q, Jmax, z1, z2, R,
+         g1, c,
+         kxmax, p50, a, L):
+    # Martin-StPaul model
+    b=(0.3*p50-1)*(np.log(10))**(-1/c)
+    # Plant water balance
+    gs = kxf(px, kxmax, p50)*(ps-px)/(1000*a*D*L)
+    # Stomatal function (Eq. 1)
+    res = gs-(1+g1/np.sqrt(D))*Af(gs, T, I, Kc, Vcmax, ca, q, Jmax, z1, z2, R)/ca*np.exp(-(px/b)**c)
+    return res
+
 def vnfsinLAI(LTf, Lamp, Lave, Z, alpha, c, g1, kxmax, p50,
               T, I, Rf, D,
               ca, Kc, q, R, Jmax, Vcmax, z1, z2,
