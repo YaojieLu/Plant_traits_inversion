@@ -113,18 +113,32 @@ def pxf2(px,
 
     return res
 
-# Medlyn model 2
+# Medlyn model 2 with constraint
 def pxf3(px,
          T, I, D, ps,
          Kc, Vcmax, ca, q, Jmax, z1, z2, R,
          g1, c,
          kxmax, p50, a, L):
+    
     # Martin-StPaul model
     b=(0.3*p50-1)*(np.log(10))**(-1/c)
     # Plant water balance
     gs = kxf(px, kxmax, p50)*(ps-px)/(1000*a*D*L)
     # Stomatal function (Eq. 1)
-    res = gs-(1+g1/np.sqrt(D))*Af(gs, T, I, Kc, Vcmax, ca, q, Jmax, z1, z2, R)/ca*np.exp(-(px/b)**c)
+    res = gs-(1+g1/np.sqrt(D))*Af(gs, T, I, Kc, Vcmax, ca, q, Jmax, z1, z2, R)/ca*np.exp(-(px/b)**c)    
+    return res
+
+# Medlyn model 2 without constraint
+def pxf4(px,
+         T, I, D, ps,
+         Kc, Vcmax, ca, q, Jmax, z1, z2, R,
+         g1, b, c,
+         kxmax, p50, a, L):
+    
+    # Plant water balance
+    gs = kxf(px, kxmax, p50)*(ps-px)/(1000*a*D*L)
+    # Stomatal function (Eq. 1)
+    res = gs-(1+g1/np.sqrt(D))*Af(gs, T, I, Kc, Vcmax, ca, q, Jmax, z1, z2, R)/ca*np.exp(-(px/b)**c)    
     return res
 
 def vnfsinLAI(LTf, Lamp, Lave, Z, alpha, c, g1, kxmax, p50,

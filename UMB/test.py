@@ -1,76 +1,63 @@
 
-from SALib.sample import saltelli
-from SALib.analyze import sobol
-import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from Functions import pxf3, kxf, pxminf
 from scipy import optimize
-from Functions import kxf, pxminf, pxf3
 
-# read MCMC input
-df = pd.read_csv('../Data/UMB_daily_average.csv')
-df = df[df['year']==2015]
-df['date'] = pd.to_datetime((df['year']*10000+df['month']*100+df['day']).apply(str), format='%Y%m%d')
-df = df[['date', 'T', 'I', 'D', 'ps15', 'ps30']]
-df['ps'] = df[['ps15', 'ps30']].mean(1)
+# species
+species = 'Aru'
+species_dict = {'Aru':['Aru_29', 31, 48], 'Bpa':['Bpa_38', 56, 144], 'Pgr':['Pgr_22', 61, 122], 'Pst':['Pst_19', 63, 142], 'Qru':['Qru_42', 51, 88]}
+species_code, Vcmax, Jmax = species_dict.get(species)
+
+# read csv
+df = pd.read_csv('../Data/UMB_daily_average_Gil_2015.csv')
+
+# extract data
+df = df[['T', 'I', 'D', 'ps15', 'ps30', 'day_len', species_code]]
 df = df.dropna()
+#df = df.drop(df.index[list(range(76, 83))])
+T = df['T']
+I = df['I']
+D = df['D']
+ps = df[['ps15', 'ps30']].mean(1)
+day_length = df['day_len']
+vn_max = df[species_code].max()
+vn = df[species_code]/vn_max
 
-# Sobol parameters
-Days = range(len(df))
-paras = ['c', 'g1', 'kxmax', 'p50', 'L', 'ps']
-problem = {'num_vars': len(paras),
-           'names': paras,
-#           'bounds': [[0.001, 0.2],
-#                      [15, 35],
-           'bounds': [[1, 15],
-                      [0.1, 1],
-                      [1, 10],
-                      [-10, -0.5],
-                      [0.5, 5],
-                      [-1.5, 0]]}
-#                      [-4, 0]]}
-par1 = saltelli.sample(problem, 2*len(paras)+2)
-
-# model
-def muf(X, env, Jmax=100, Vcmax=50,
-        ca=400, Kc=460, q=0.3, R=8.314, z1=0.9, z2=0.9999,
-        a=1.6, l=1.8*10**(-5), u=48240,
-        alpha=0.013):
-    c, g1, kxmax, p50, L, ps = X
-    T, I, D = env
-    pxmin = pxminf(ps, p50)
-    pxmax = optimize.minimize_scalar(pxf3, bounds=(pxmin, ps), method='bounded', args=(T, I, D, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
-    px1 = pxf3(pxmin, T, I, D, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L)
-    px2 = pxf3(pxmax.x, T, I, D, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L)
-    if px1*px2 < 0:
-        px = optimize.brentq(pxf3, pxmin, pxmax.x, args=(T, I, D, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
-        return l*u*kxf(px, kxmax, p50)*(ps-px)/1000/alpha
-    else:
-        if abs(px1) < abs(px2):
-            return 1
+def muf(c, p50, kxmax, g1,
+        ca=400, Kc=460, q=0.3, R=8.314, Jmax=Jmax, Vcmax=Vcmax, z1=0.9, z2=0.9999, a=1.6, L=3.9):
+    sapflow_modeled = []
+    for i in range(len(vn)):
+        # Environmental conditions
+        Ti, Ii, Di, psi, dli = T.iloc[i], I.iloc[i], D.iloc[i], ps.iloc[i], day_length.iloc[i]
+        # px
+        pxmin = pxminf(psi, p50)
+        if pxmin < psi:
+            pxmax = optimize.minimize_scalar(pxf3, bounds=(pxmin, psi), method='bounded', args=(Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
+            px1 = pxf3(pxmin, Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L)
+            px2 = pxf3(pxmax.x, Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L)
+            if px1*px2 < 0:
+                px = optimize.brentq(pxf3, pxmin, pxmax.x, args=(Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
+                sapflow_modeled.append(kxf(px, kxmax, p50)*(psi-px)*30*60*dli*18/1000000/vn_max)
+            else:
+                print(i, ' ', c, ' ', p50, ' ', Ti)
+                if abs(px1) < abs(px2):
+                    sapflow_modeled.append(1)
+                else:
+                    sapflow_modeled.append(0)
         else:
-            return 0
+            print('pxmin > ps')
+            sapflow_modeled.append(100)
+    return sapflow_modeled
 
-# Sobol analysis
-ST = []
-S1 = []
-for d in Days:
-    def muf1(X):
-        return muf(X, df[['T', 'I', 'D']].iloc[d, :])
-    
-    # analysis
-    Y = []
-    for i, X in enumerate(par1):
-        Y.append(muf1(X))
-    
-    Si = sobol.analyze(problem, np.array(Y))
-    ST.append(Si['ST'])
-    S1.append(Si['S1'])
-    print(d, ' ', Si['ST'])
+# simulation
+c = 10
+p50 = -2.974111
+kxmax = 1.852892/10
+g1 = 12.756095/10
+vn_model = muf(c, p50, kxmax, g1)
 
-dfST = pd.DataFrame(ST, columns=paras, index=list(Days))
-dfS1 = pd.DataFrame(S1, columns=paras, index=list(Days))
-dfST.index.name='Days'
-dfS1.index.name='Days'
-
-# Save to CSV
-dfST.to_csv('../Results/Sobol_day_UMB_test.txt', index=True)
+# figure
+plt.plot(vn, label='Aru_29')
+plt.plot(vn_model, label='model')
+plt.legend()

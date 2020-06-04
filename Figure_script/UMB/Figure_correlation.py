@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 
 # load MCMC output and thin
 species = 'Aru'
-ts = pickle.load(open('../../Data/UMB_trace/{}.pickle'.format(species), 'rb'))
+ts = pickle.load(open('../../Data/UMB_trace/MCMC.pickle', 'rb'))
 latex = ['$\\alpha$', r'$c$', '$\\psi_{x50}$',
          r'$k_{xmax}$', r'$L \times g_1$']
 df_thinned = {}

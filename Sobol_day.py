@@ -18,34 +18,34 @@ D = get_data('D')
 
 # Sobol parameters
 Days = range(0, len(T))
-#parsSA = ['alpha', 'c', 'g1', 'kxmax', 'p50', 'L', 'ps']
-#problem = {'num_vars': len(parsSA),
-#           'names': parsSA,
-#           'bounds': [[0.001, 0.2],
-#                      [2, 20],
-#                      [10, 100],
-#                      [1, 10],
-#                      [-9, -1],
-#                      [0.5, 3],
-#                      [-4, -1]]}
-#                      #[-0.5, -0.1]]}
-parsSA = ['c', 'p50', 'L', 'ps']
+parsSA = ['alpha', 'c', 'g1', 'kxmax', 'p50', 'L', 'ps']
 problem = {'num_vars': len(parsSA),
            'names': parsSA,
-           'bounds': [[2, 20],
+           'bounds': [[0.001, 0.2],
+                      [2, 20],
+                      [10, 100],
+                      [1, 10],
                       [-9, -1],
                       [0.5, 3],
                       [-4, -1]]}
                       #[-0.5, -0.1]]}
+#parsSA = ['c', 'p50', 'L', 'ps']
+#problem = {'num_vars': len(parsSA),
+#           'names': parsSA,
+#           'bounds': [[2, 20],
+#                      [-9, -1],
+#                      [0.5, 3],
+#                      [-4, -1]]}
+#                      #[-0.5, -0.1]]}
 par1 = saltelli.sample(problem, 10000)
 
 # Functions
 # Find domain
 def testf(X, Env,
           ca = 400, Kc = 460, q = 0.3, R = 8.314, Jmax = 80, Vcmax = 30, z1 = 0.9, z2 = 0.9999,
-          a = 1.6, g1 = 50, kxmax = 7):
-    #alpha, c, g1, kxmax, p50, L, ps = X
-    c, p50, L, ps = X
+          a = 1.6):#, g1 = 50, kxmax = 7):
+    alpha, c, g1, kxmax, p50, L, ps = X
+    #c, p50, L, ps = X
     T, I, D = Env
     pxmin = pxminf(ps, p50)
     pxmax = optimize.minimize_scalar(pxf, bounds=(pxmin, ps), method='bounded', args=(T, I, D, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
@@ -54,9 +54,9 @@ def testf(X, Env,
 # Model
 def muf(X, Env,
         ca = 400, Kc = 460, q = 0.3, R = 8.314, Jmax = 80, Vcmax = 30, z1 = 0.9, z2 = 0.9999,
-        a = 1.6, alpha = 0.02, g1 = 50, kxmax = 7):
-    #alpha, c, g1, kxmax, p50, L, ps = X
-    c, p50, L, ps = X
+        a = 1.6):#, alpha = 0.02, g1 = 50, kxmax = 7):
+    alpha, c, g1, kxmax, p50, L, ps = X
+    #c, p50, L, ps = X
     T, I, D = Env
     pxmin = pxminf(ps, p50)
     pxmax = optimize.minimize_scalar(pxf, bounds=(pxmin, ps), method='bounded', args=(T, I, D, ps, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
@@ -100,4 +100,4 @@ dfST.index.name='Days'
 dfS1.index.name='Days'
 
 # Save to CSV
-dfST.to_csv("Results/Sobol_day_4.txt", encoding='utf-8', index=True)
+dfST.to_csv("Results/Sobol_day_7.txt", encoding='utf-8', index=True)
