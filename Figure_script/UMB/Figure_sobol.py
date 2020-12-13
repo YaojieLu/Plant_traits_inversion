@@ -17,7 +17,7 @@ df = df.rename(columns={'level_1': 'Parameters', 0: "Sobol's total order indices
 sns.set(style="whitegrid")
 fig, ax = plt.subplots(figsize=(10, 10))
 ax = sns.boxplot(ax=ax, x='Parameters', y="Sobol's total order indices", data=df)
-ax.set(ylim=(0, 1.2))
+ax.set(ylim=(0, 1))
 ax.tick_params(labelsize=20)
 ax.set_xlabel('Parameters', fontsize=20)
 ax.set_ylabel("Sobol's total order indices", fontsize=20)

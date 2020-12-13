@@ -6,12 +6,12 @@ import seaborn as sns
 from sklearn.feature_selection import mutual_info_regression
 
 # script input
-species, run = 'Bpa', 15
+species, run = 'Aru', 15
 
 # load MCMC output and thin
-ts = pickle.load(open('../Data/UMB_trace/{}_{}.pickle'.format(run, species), 'rb'))
+ts = pickle.load(open('../Data/UMB_trace/{}.pickle'.format(species), 'rb'))
 latex = ['$\\alpha$', '$\\mathit{c}$', '$\\psi_{x50}$',
-         '$\\mathit{k_{xmax}}$', '$\\mathit{g_1}$', '$\\mathit{L}$']
+         '$\\mathit{k_{xmax}}$', '$\\mathit{g_1}$']
 df_thinned = {}
 for key in ts:
     df_thinned[key] = [item for index, item in enumerate(ts[key]) if index % 50 == 0]

@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 # parameters
 ps=0 # soil water potential
-dp_s=1 # water potential gradient for segment
-dp_w=2 # water potential gradient for whole-plant model
+dp_s=0.6 # water potential gradient for segment
+dp_w=3.15 # water potential gradient for whole-plant model
 p50_w=-1 # p50 for the whole-plant model
 
 # function
@@ -29,18 +29,18 @@ def p50_sf(n): # the nth segment from the root
     px_n=ps-n*dp_s # water potential at the nth segment
     p50=optimize.brentq(p50f, -10, -0.1, args=(E, px_n, dp_s))
     return p50
-E = Ef(ps, p50_w, dp_w)
-print(E, optimize.brentq(p50f, -10, -0.1, args=(E, 0, 1)))
-# # figure
-# x=list(range(1, 21))
-# y=[p50_sf(n) for n in x]
-# fig = plt.figure(figsize = (8, 6))
-# ax=fig.add_subplot(1, 1, 1)
-# plt.scatter(x, y)
-# plt.axhline(y=p50_w, color='r', linestyle='--')
-# plt.xlim([0, 21])
-# plt.ylim([-3, 0])
-# plt.xlabel('nth segment', fontsize=20)
-# plt.ylabel('segment p50', fontsize=20)
-# plt.tick_params(labelsize=20)
-# #plt.tight_layout
+# E = Ef(ps, p50_w, dp_w)
+# print(E, optimize.brentq(p50f, -10, -0.1, args=(E, 0, 1)))
+# figure
+x=list(range(1, 10))
+y=[p50_sf(n) for n in x]
+fig = plt.figure(figsize = (8, 6))
+ax=fig.add_subplot(1, 1, 1)
+plt.scatter(x, y)
+plt.axhline(y=p50_w, color='r', linestyle='--')
+plt.xlim([0, 10])
+plt.ylim([-2, 0])
+plt.xlabel('nth segment', fontsize=20)
+plt.ylabel('Segment P50', fontsize=20)
+plt.tick_params(labelsize=20)
+fig.savefig('../Figures/S3.png', bbox_inches='tight')

@@ -16,17 +16,21 @@ I = df['I'].mean()
 D = df['D'].mean()
 ps= df['ps'].mean()
 
-def f1(px, c=15, p50=-5):
+def f1(px, c=30, p50=-5):
     PLC = PLCf(px, p50)
     f1 = lambda x:np.exp(-x*c)
     return (f1(PLC)-f1(1))/(f1(0)-f1(1))
-def f2(px, c, p50=-4):
+def f2(px, c=.30, p50=-2):
     b=(0.3*p50-1)*(np.log(10))**(-1/c)
     return np.exp(-(px/b)**c)
-x = np.linspace(-5, 0, 100)
+def f3(px, p50=-1.2, c=10):
+    return 2**(-(px/p50)**c)
+x = np.linspace(-2, 0, 100)
 y1 = f1(x)
-y2 = f2(x, c=1)
+y2 = f2(x)
 plt.plot(x, y1, label='old')
 plt.plot(x, y2, label='new')
 plt.ylim(0, 1)
-plt.legend()
+plt.xlabel('px', fontsize=30)
+plt.ylabel('gs/gsmax', fontsize=30)
+plt.legend(title='p50=-2; -0')

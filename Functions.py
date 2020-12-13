@@ -93,7 +93,6 @@ def pxf(px,
     f1 = lambda x:np.exp(-x*c)
     # Stomatal function (Eq. 1)
     res = gs-g1*Af(gs, T, I, Kc, Vcmax, ca, q, Jmax, z1, z2, R)/(ca-tauf(T, R))*(f1(PLC)-f1(1))/(f1(0)-f1(1))
-
     return res
 
 # Medlyn model

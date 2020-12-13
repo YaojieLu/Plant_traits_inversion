@@ -55,9 +55,10 @@ def qtf(traces, T, I, D, ps, Jmax, Vcmax, n_samples=1000):
 # main function 
 def f1(species, T, I, D, ps, Vcmax, Jmax, date):
     # read trace
-    ts = pickle.load(open('../Data/UMB_trace/old/{}.pickle'.format(species), 'rb'))    
+    ts = pickle.load(open('../Data/UMB_trace/average_15_30/{}.pickle'.format(species), 'rb'))    
     vn = qtf(ts, T, I, D, ps, Jmax, Vcmax)
     vn['date'] = list(date)
+    vn['ps'] = list(ps)
     vn.rename(columns={0.05: 'qt=0.05', 0.5: 'qt=0.5', 0.95: 'qt=0.95'}, inplace=True)
     return vn
 

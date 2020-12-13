@@ -32,8 +32,8 @@ for i in range(n):
         res=optimize.brentq(p50f, 1.001*p50, 0, args=(px_s[i], px_s[i+1], E))
     except:
         res=np.nan
-    print(px_s[i], px_s[i+1])
-    print('p50: {:0.2f} px: {:0.2f}'.format(res, px_s[i+1]))
+    # print(px_s[i], px_s[i+1])
+    # print('p50: {:0.2f} px: {:0.2f}'.format(res, px_s[i+1]))
     p50_s.append(res)
 
 # figure
@@ -45,6 +45,6 @@ plt.axhline(y=p50, color='r', linestyle='--')
 plt.xlim([0, n+1])
 #plt.ylim([-3, 0])
 plt.xlabel('nth segment', fontsize=20)
-plt.ylabel('segment p50', fontsize=20)
+plt.ylabel('Segment P50', fontsize=20)
 plt.tick_params(labelsize=20)
-#plt.tight_layout
+fig.savefig('../Figures/S4.png', bbox_inches='tight')

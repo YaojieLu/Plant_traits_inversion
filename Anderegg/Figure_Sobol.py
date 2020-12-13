@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('../Results/ST.csv')
+df = pd.read_csv('../Results/S1.csv')
 
 # preprocessing
 labels = ['$\\mathit{b}$', '$\\mathit{c}$', '$\\mathit{g_{1}}$', 
@@ -19,4 +19,4 @@ ax = sns.boxplot(ax=ax, x='Parameters', y="Sobol's total order indices", data=df
 ax.set(ylim=(0, 1))
 ax.tick_params(labelsize=20)
 ax.set_xlabel('Parameters', fontsize=20)
-ax.set_ylabel("Sobol's total order indices", fontsize=20)
+ax.set_ylabel("Sobol's 1st order indices", fontsize=20)

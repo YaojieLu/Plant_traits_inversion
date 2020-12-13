@@ -20,6 +20,8 @@ for row in axs:
         col.plot(df['date'], df['qt=0.5'], color='k')
         col.fill_between(df['date'], df['qt=0.05'], df['qt=0.95'],
                          color='b', alpha=0.2)
+        col2 = col.twinx()
+        col2.plot(df['date'], df['ps'], color='red')
         col.set_title(sp, fontsize=30)
         col.tick_params(labelsize=20)
         if i > 1:
@@ -29,7 +31,9 @@ for row in axs:
             col.axes.get_xaxis().set_visible(False)
         if i == 0 or i == 2:
             col.set_ylabel('PLC', fontsize=30)
+            col2.axes.get_yaxis().set_visible(False)
         else:
             col.axes.get_yaxis().set_visible(False)
+            col2.set_ylabel('$\\psi_{s}$ (MPa)', fontsize=30)
         i += 1
-plt.subplots_adjust(hspace=0.1, wspace=0.1)
+plt.subplots_adjust(hspace=0.15, wspace=0.1)

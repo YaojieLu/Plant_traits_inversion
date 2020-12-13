@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from Functions import pxf3, kxf, pxminf
+from Functions import pxf4, kxf, pxminf
 from scipy import optimize
 
 # species
@@ -24,7 +24,7 @@ vn = df[species_code].reset_index()[species_code]
 vn_max = vn.max()
 vn = vn/vn_max
 
-def muf(alpha, c, p50, kxmax, g1, L=1,
+def muf(alpha, b, c, p50, kxmax, g1, L=1,
         ca=400, Kc=460, q=0.3, R=8.314, Jmax=Jmax, Vcmax=Vcmax, z1=0.9, z2=0.9999, a=1.6):
     sapflow_modeled = []
     for i in range(len(vn)):
@@ -33,11 +33,11 @@ def muf(alpha, c, p50, kxmax, g1, L=1,
         # px
         pxmin = pxminf(psi, p50)
         if pxmin < psi:
-            pxmax = optimize.minimize_scalar(pxf3, bounds=(pxmin, psi), method='bounded', args=(Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
-            px1 = pxf3(pxmin, Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L)
-            px2 = pxf3(pxmax.x, Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L)
+            pxmax = optimize.minimize_scalar(pxf4, bounds=(pxmin, psi), method='bounded', args=(Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, b, c, kxmax, p50, a, L))
+            px1 = pxf4(pxmin, Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, b, c, kxmax, p50, a, L)
+            px2 = pxf4(pxmax.x, Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, b, c, kxmax, p50, a, L)
             if px1*px2 < 0:
-                px = optimize.brentq(pxf3, pxmin, pxmax.x, args=(Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, c, kxmax, p50, a, L))
+                px = optimize.brentq(pxf4, pxmin, pxmax.x, args=(Ti, Ii, Di, psi, Kc, Vcmax, ca, q, Jmax, z1, z2, R, g1, b, c, kxmax, p50, a, L))
                 sapflow_modeled.append(kxf(px, kxmax, p50)*(psi-px)*30*60*dli*18/1000000/vn_max/alpha)
             else:
                 if abs(px1) < abs(px2):
@@ -50,15 +50,21 @@ def muf(alpha, c, p50, kxmax, g1, L=1,
     return sapflow_modeled
 
 # simulation
-alpha = 15
-c = 7.7
-g1 = 2.5
-kxmax = 1300
+alpha = 10**1.13
+c = 7.72
+g1 = 2.44
+kxmax = 14
 p50 = -4.2
-vn_model1 = muf(alpha, 1, p50, kxmax, g1)
-vn_model2 = muf(alpha, 5, p50, kxmax, g1)
+b = (0.3*p50-1)*(np.log(10))**(-1/c)
+vn_model1 = muf(alpha, b, c, p50/4, kxmax, g1)
+vn_model2 = muf(alpha, b, c, p50, kxmax, g1)
+vn_model3 = muf(alpha, b, c, p50*4, kxmax, g1)
 # figure
+para = 'p50'
 plt.plot(vn, label='observed')
-plt.plot(vn_model1, label='model1')
-plt.plot(vn_model2, label='model2')
+plt.plot(vn_model1, label='with {}/4'.format(para))
+plt.plot(vn_model2, label='with {}'.format(para))
+plt.plot(vn_model3, label='with {}*4'.format(para))
+plt.xlabel('Day', fontsize=30)
+plt.ylabel('Sap flow', fontsize=30)
 plt.legend()
